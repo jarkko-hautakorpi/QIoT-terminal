@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "lookuptables.h"
 #include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -11,6 +12,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->plainTextEdit_BIN->hide();
     ui->plainTextEdit_DEC->hide();
     ui->plainTextEdit_HEX->hide();
+    ui->plainTextEdit_console->ensureCursorVisible();
+    ui->plainTextEdit_BIN->ensureCursorVisible();
+    ui->plainTextEdit_DEC->ensureCursorVisible();
+    ui->plainTextEdit_HEX->ensureCursorVisible();
     SerialSettings currentSettings;
     serial = new QSerialPort(this);
     this->generateSettingsParameters();
@@ -174,27 +179,42 @@ void MainWindow::receive()
 {
     bool ok = false;
     QByteArray data = serial->readAll();
-    ui->plainTextEdit_console->insertPlainText(QString(data));
+    //ui->textBrowser_console->insertPlainText(QString(data));
+    ui->label_console->setText(ui->label_console->text() + QString(data));
+    //ui->plainTextEdit_console->insertPlainText(QString(data));
+    //ui->plainTextEdit_console->appendPlainText(QString(data));
+    //ui->plainTextEdit_console->ensureCursorVisible();
 
-    // iterate through chars
+
     for (int i = 0; i < data.size(); ++i) {
-        QChar character = data.at(i);
-        if(ui->checkBox_Hex->isChecked()) {
-            //ui->plainTextEdit_HEX->insertPlainText();
+        if(1) {
+            // SLOW
+            /*
+            ui->plainTextEdit_HEX->insertPlainText(
+                        QString(hex_strings[(quint8)data.at(i)])
+                    );
+            ui->plainTextEdit_HEX->ensureCursorVisible();
+            */
+            //ui->label_console->setText(ui->label_console->text() + QString(hex_strings[(quint8)data.at(i)]));
         }
-        if(ui->checkBox_Dec->isChecked()) {
+
+        if(0) {
+            // SUPER SLOW!
+            //ui->plainTextEdit_HEX->insertPlainText(data.toHex().toUpper());
+            //ui->plainTextEdit_HEX->ensureCursorVisible();
+        }
+
+        if(0) {
             //ui->plainTextEdit_DEC->insertPlainText(data.toUInt());
         }
-        if(ui->checkBox_Bin->isChecked()) {
-            //QString bin = QString::number(data.toLongLong(&ok, 16), 2);
-            //ui->plainTextEdit_BIN->insertPlainText(data.toLongLong(&ok, 16));
-        }
 
+        if(0) {
+            ui->plainTextEdit_BIN->insertPlainText(
+                        QString(bin_strings[(quint8)data.at(i)])
+                    );
+        }
     }
-    //QScrollBar *elevator = ui->plainTextEdit_console->verticalScrollBar();
-    //elevator->setValue(elevator->maximum());
-    ui->plainTextEdit_console->ensureCursorVisible();
-    //ui->plainTextEdit_console->verticalScrollBar()->setValue(ui->plainTextEdit_console->verticalScrollBar()->maximum());
+
 }
 
 void MainWindow::receiveToHEX()

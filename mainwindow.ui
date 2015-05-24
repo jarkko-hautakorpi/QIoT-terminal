@@ -289,6 +289,22 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_console">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+          <property name="textFormat">
+           <enum>Qt::PlainText</enum>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPlainTextEdit" name="plainTextEdit_console">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -331,7 +347,7 @@
          <widget class="QPlainTextEdit" name="plainTextEdit_HEX">
           <property name="minimumSize">
            <size>
-            <width>55</width>
+            <width>65</width>
             <height>0</height>
            </size>
           </property>
@@ -364,7 +380,7 @@
          <widget class="QPlainTextEdit" name="plainTextEdit_DEC">
           <property name="minimumSize">
            <size>
-            <width>55</width>
+            <width>65</width>
             <height>0</height>
            </size>
           </property>
@@ -397,7 +413,7 @@
          <widget class="QPlainTextEdit" name="plainTextEdit_BIN">
           <property name="minimumSize">
            <size>
-            <width>120</width>
+            <width>130</width>
             <height>0</height>
            </size>
           </property>
