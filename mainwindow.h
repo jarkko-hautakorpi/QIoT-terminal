@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
+#include <QtGui/QTextCursor>
 #include <QTimer>
 
 namespace Ui {
@@ -18,6 +19,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    QByteArray consoleTextBuffer;
+    bool consoleTextBufferUpdated;
     struct SerialSettings {
         QString name;
         qint32 baudRate;
@@ -35,9 +38,14 @@ public:
 
 public slots:
     void receive();
+    void send();
     void receiveToHEX();
     void receiveToDEC();
     void receiveToBIN();
+    void textAreaUpdate();
+    void textAreasClear();
+    void setConsoleTextUpdate();
+    void callEnumeratePorts();
 
 private:
     Ui::MainWindow *ui;

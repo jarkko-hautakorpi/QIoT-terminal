@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>902</width>
+    <width>1050</width>
     <height>857</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string notr="true" extracomment="Serial console tool for programmers.">QIoT-terminal</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_13">
@@ -283,24 +283,20 @@
           <property name="enabled">
            <bool>true</bool>
           </property>
+          <property name="font">
+           <font>
+            <family>Ubuntu Mono</family>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
+          <property name="cursor" stdset="0">
+           <cursorShape>IBeamCursor</cursorShape>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_console">
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>TextLabel</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::PlainText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          <property name="plainText">
+           <string/>
           </property>
          </widget>
         </item>
@@ -314,7 +310,7 @@
           </property>
           <property name="font">
            <font>
-            <family>Serif</family>
+            <family>Ubuntu Mono</family>
            </font>
           </property>
           <property name="cursor" stdset="0">
@@ -359,7 +355,7 @@
           </property>
           <property name="font">
            <font>
-            <family>Serif</family>
+            <family>Ubuntu Mono</family>
            </font>
           </property>
           <property name="cursor" stdset="0">
@@ -392,7 +388,7 @@
           </property>
           <property name="font">
            <font>
-            <family>Serif</family>
+            <family>Ubuntu Mono</family>
            </font>
           </property>
           <property name="cursor" stdset="0">
@@ -425,7 +421,7 @@
           </property>
           <property name="font">
            <font>
-            <family>Serif</family>
+            <family>Ubuntu Mono</family>
             <kerning>true</kerning>
            </font>
           </property>

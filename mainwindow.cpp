@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "lookuptables.h"
 #include <QMessageBox>
+#include <QContiguousCache>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,18 +13,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->plainTextEdit_BIN->hide();
     ui->plainTextEdit_DEC->hide();
     ui->plainTextEdit_HEX->hide();
-    ui->plainTextEdit_console->ensureCursorVisible();
-    ui->plainTextEdit_BIN->ensureCursorVisible();
-    ui->plainTextEdit_DEC->ensureCursorVisible();
-    ui->plainTextEdit_HEX->ensureCursorVisible();
     SerialSettings currentSettings;
     serial = new QSerialPort(this);
     this->generateSettingsParameters();
     this->enumeratePorts();
     connectUiActions();
-    QTimer *portPoller = new QTimer(this);
-    portPoller->setInterval(1000);
-    portPoller->start();
+    //QTimer *portPoller = new QTimer(this);
+    //portPoller->start(1000);
+    //connect(portPoller, SIGNAL(timeout()), this, SLOT(callEnumeratePorts()));
+    QTimer *textRefresh = new QTimer(this);
+    connect(textRefresh, SIGNAL(timeout()), this, SLOT(textAreaUpdate()));
+    textRefresh->start(200);
+    consoleTextBufferUpdated = false;
 }
 
 MainWindow::~MainWindow()
@@ -96,6 +97,8 @@ void MainWindow::connectUiActions()
             this, SLOT(togglePortConnection()) );
     connect(ui->pushButton_about, SIGNAL(clicked()),
             this, SLOT(about()) );
+    connect(ui->pushButton_send, SIGNAL(clicked()),
+            this, SLOT(send()) );
     connect(serial, SIGNAL(readyRead()),
             this, SLOT(receive()));
     connect(ui->pushButton_send, SIGNAL(clicked()),
@@ -103,6 +106,18 @@ void MainWindow::connectUiActions()
     // Port polling timer
     connect(&portPoller, SIGNAL(timeout()),
             this, SLOT(pollPorts()) );
+    connect(ui->pushButton_CLEAR, SIGNAL(clicked()),
+            this, SLOT(textAreasClear()) );
+    connect(ui->radioButton_ASCII, SIGNAL(clicked()),
+            this, SLOT(setConsoleTextUpdate()) );
+    connect(ui->radioButton_HEX, SIGNAL(clicked()),
+            this, SLOT(setConsoleTextUpdate()) );
+    connect(ui->checkBox_Hex, SIGNAL(clicked()),
+            this, SLOT(setConsoleTextUpdate()) );
+    connect(ui->checkBox_Dec, SIGNAL(clicked()),
+            this, SLOT(setConsoleTextUpdate()) );
+    connect(ui->checkBox_Bin, SIGNAL(clicked()),
+            this, SLOT(setConsoleTextUpdate()) );
 }
 
 /**
@@ -177,44 +192,16 @@ void MainWindow::updateSettings()
 
 void MainWindow::receive()
 {
-    bool ok = false;
-    QByteArray data = serial->readAll();
-    //ui->textBrowser_console->insertPlainText(QString(data));
-    ui->label_console->setText(ui->label_console->text() + QString(data));
-    //ui->plainTextEdit_console->insertPlainText(QString(data));
-    //ui->plainTextEdit_console->appendPlainText(QString(data));
-    //ui->plainTextEdit_console->ensureCursorVisible();
+    MainWindow::consoleTextBufferUpdated = true;
+    MainWindow::consoleTextBuffer += serial->readAll();
+    // write to plaintext area in update slot textAreaUpdate
+}
 
-
-    for (int i = 0; i < data.size(); ++i) {
-        if(1) {
-            // SLOW
-            /*
-            ui->plainTextEdit_HEX->insertPlainText(
-                        QString(hex_strings[(quint8)data.at(i)])
-                    );
-            ui->plainTextEdit_HEX->ensureCursorVisible();
-            */
-            //ui->label_console->setText(ui->label_console->text() + QString(hex_strings[(quint8)data.at(i)]));
-        }
-
-        if(0) {
-            // SUPER SLOW!
-            //ui->plainTextEdit_HEX->insertPlainText(data.toHex().toUpper());
-            //ui->plainTextEdit_HEX->ensureCursorVisible();
-        }
-
-        if(0) {
-            //ui->plainTextEdit_DEC->insertPlainText(data.toUInt());
-        }
-
-        if(0) {
-            ui->plainTextEdit_BIN->insertPlainText(
-                        QString(bin_strings[(quint8)data.at(i)])
-                    );
-        }
-    }
-
+void MainWindow::send()
+{
+    QByteArray data;
+    data.append(ui->lineEdit_send_input->text());
+    serial->write( data );
 }
 
 void MainWindow::receiveToHEX()
@@ -233,6 +220,93 @@ void MainWindow::receiveToBIN()
 {
     QByteArray data = serial->readAll();
     ui->plainTextEdit_console->insertPlainText(QString(data));
+}
+
+void MainWindow::textAreaUpdate()
+{
+    if(!MainWindow::consoleTextBufferUpdated)
+    {
+        return;
+    }
+    QTextCursor c =  ui->plainTextEdit_console->textCursor();
+    QString hex_console, hex_data, bin_data, dec_data;
+    if (ui->radioButton_ASCII->isChecked())
+    {
+        ui->plainTextEdit_console->setPlainText(QString(MainWindow::consoleTextBuffer));
+    } else {
+        for (int i = 0; i < MainWindow::consoleTextBuffer.size(); ++i) {
+            hex_console.append( hex_strings[(quint8)MainWindow::consoleTextBuffer.at(i)]);
+            hex_console.append(" ");
+            if((i+1) % 16 == 0) {
+                hex_console.append("\n");
+            }
+        }
+        ui->plainTextEdit_console->setPlainText(QString(hex_console));
+        //ui->plainTextEdit_console->setPlainText(QString(MainWindow::consoleTextBuffer.toHex().toUpper()));
+    }
+
+    c.movePosition(QTextCursor::End);
+    ui->plainTextEdit_console->setTextCursor(c);
+    ui->plainTextEdit_console->ensureCursorVisible();
+
+    for (int i = 0; i < MainWindow::consoleTextBuffer.size(); ++i) {
+        if(ui->checkBox_Hex->isChecked()) {
+            hex_data.append( hex_strings[(quint8)MainWindow::consoleTextBuffer.at(i)] );
+            hex_data.append("\n");
+        }
+
+        if(ui->checkBox_Dec->isChecked()) {
+            dec_data.append( QString::number((quint8)MainWindow::consoleTextBuffer.at(i)) );
+            dec_data.append("\n");
+        }
+
+        if(ui->checkBox_Bin->isChecked()) {
+            bin_data.append( QString(bin_strings[(quint8)MainWindow::consoleTextBuffer.at(i)]) );
+            bin_data.append("\n");
+        }
+    }
+
+    if(ui->checkBox_Hex->isChecked()) {
+        ui->plainTextEdit_HEX->setPlainText(hex_data);
+        QTextCursor c =  ui->plainTextEdit_HEX->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->plainTextEdit_HEX->setTextCursor(c);
+        ui->plainTextEdit_HEX->ensureCursorVisible();
+    }
+    if(ui->checkBox_Dec->isChecked()) {
+        ui->plainTextEdit_DEC->setPlainText(dec_data);
+        QTextCursor c =  ui->plainTextEdit_DEC->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->plainTextEdit_DEC->setTextCursor(c);
+        ui->plainTextEdit_DEC->ensureCursorVisible();
+    }
+    if(ui->checkBox_Bin->isChecked()) {
+        ui->plainTextEdit_BIN->setPlainText(bin_data);
+        QTextCursor c =  ui->plainTextEdit_BIN->textCursor();
+        c.movePosition(QTextCursor::End);
+        ui->plainTextEdit_BIN->setTextCursor(c);
+        ui->plainTextEdit_BIN->ensureCursorVisible();
+    }
+    MainWindow::consoleTextBufferUpdated = false;
+}
+
+void MainWindow::textAreasClear()
+{
+    MainWindow::consoleTextBuffer.clear();
+    ui->plainTextEdit_console->clear();
+    ui->plainTextEdit_BIN->clear();
+    ui->plainTextEdit_DEC->clear();
+    ui->plainTextEdit_HEX->clear();
+}
+
+void MainWindow::setConsoleTextUpdate()
+{
+    MainWindow::consoleTextBufferUpdated = true;
+}
+
+void MainWindow::callEnumeratePorts()
+{
+    this->enumeratePorts();
 }
 
 void MainWindow::sendString()
@@ -256,6 +330,6 @@ void MainWindow::about()
 {
     QMessageBox::about(this, tr("About QIoT-terminal"),
                        tr("Serial console tool for programmers. "
-                          "For use with Arduino, ESP8266 etc."
+                          "For use with Arduino, HC-11, ESP8266 etc."
                           "See https://github.com/jarkko-hautakorpi/QIoT-terminal.git"));
 }
