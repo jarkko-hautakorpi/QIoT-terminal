@@ -232,7 +232,7 @@ void MainWindow::textAreaUpdate()
     QString hex_console, hex_data, bin_data, dec_data;
     if (ui->radioButton_ASCII->isChecked())
     {
-        ui->plainTextEdit_console->setPlainText(QString(MainWindow::consoleTextBuffer));
+        ui->plainTextEdit_console->setPlainText(QTextCodec::codecForMib(4)->toUnicode(MainWindow::consoleTextBuffer));
     } else {
         for (int i = 0; i < MainWindow::consoleTextBuffer.size(); ++i) {
             hex_console.append( hex_strings[(quint8)MainWindow::consoleTextBuffer.at(i)]);
