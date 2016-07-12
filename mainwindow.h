@@ -7,6 +7,7 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QtGui/QTextCursor>
 #include <QTimer>
+#include <QTextCodec>
 
 namespace Ui {
 class MainWindow;
