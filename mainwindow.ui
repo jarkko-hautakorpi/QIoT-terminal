@@ -518,44 +518,18 @@
      </widget>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <layout class="QVBoxLayout" name="verticalLayout_9">
       <item>
-       <widget class="QLabel" name="label_8">
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
+       <widget class="QCheckBox" name="checkBox_appendLinefeed">
         <property name="text">
-         <string>TextLabel</string>
+         <string>Append NL line feed (0x0A)</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_9">
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
+       <widget class="QCheckBox" name="checkBox_appendCarriageReturn">
         <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_10">
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_11">
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
+         <string>Append CR carriage return (0x0D)</string>
         </property>
        </widget>
       </item>

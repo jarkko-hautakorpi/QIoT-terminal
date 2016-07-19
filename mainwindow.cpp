@@ -197,13 +197,6 @@ void MainWindow::receive()
     // write to plaintext area in update slot textAreaUpdate
 }
 
-void MainWindow::send()
-{
-    QByteArray data;
-    data.append(ui->lineEdit_send_input->text());
-    serial->write( data );
-}
-
 void MainWindow::receiveToHEX()
 {
     QByteArray data = serial->readAll();
@@ -315,9 +308,23 @@ void MainWindow::sendString()
 
 }
 
+void MainWindow::send()
+{
+    QByteArray data;
+    data.append(ui->lineEdit_send_input->text());
+    this->send(data);
+}
+
 void MainWindow::send(const QByteArray &data)
 {
-    this->serial->write(data);
+    QByteArray chardata = data;
+    if(ui->checkBox_appendLinefeed->isChecked()) {
+        chardata.append("\n");
+    }
+    if(ui->checkBox_appendCarriageReturn->isChecked()) {
+        chardata.append("\r");
+    }
+    this->serial->write(chardata);
 }
 
 void MainWindow::pollPorts()
