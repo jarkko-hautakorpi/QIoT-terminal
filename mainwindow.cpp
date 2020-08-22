@@ -13,7 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->plainTextEdit_BIN->hide();
     ui->plainTextEdit_DEC->hide();
     ui->plainTextEdit_HEX->hide();
-    SerialSettings currentSettings;
     serial = new QSerialPort(this);
     this->generateSettingsParameters();
     this->enumeratePorts();
@@ -25,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(textRefresh, SIGNAL(timeout()), this, SLOT(textAreaUpdate()));
     textRefresh->start(200);
     consoleTextBufferUpdated = false;
+    ui->lineEdit_send_input->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -99,6 +99,8 @@ void MainWindow::connectUiActions()
             this, SLOT(about()) );
     connect(ui->pushButton_send, SIGNAL(clicked()),
             this, SLOT(send()) );
+    connect(ui->lineEdit_send_input, SIGNAL(returnPressed()),
+            this, SLOT(send()) );
     connect(serial, SIGNAL(readyRead()),
             this, SLOT(receive()));
     connect(ui->pushButton_send, SIGNAL(clicked()),
@@ -118,6 +120,8 @@ void MainWindow::connectUiActions()
             this, SLOT(setConsoleTextUpdate()) );
     connect(ui->checkBox_Bin, SIGNAL(clicked()),
             this, SLOT(setConsoleTextUpdate()) );
+    connect(this, SIGNAL(keypress(int)),
+            this, SLOT(keyeventHandler(int)));
 }
 
 /**
@@ -312,6 +316,10 @@ void MainWindow::send()
 {
     QByteArray data;
     data.append(ui->lineEdit_send_input->text());
+    if(ui->lineEdit_send_input->text().length() > 0) {
+        history.append(ui->lineEdit_send_input->text());
+    }
+    this->historyPointer = history.count();
     this->send(data);
 }
 
@@ -325,6 +333,7 @@ void MainWindow::send(const QByteArray &data)
         chardata.append("\r");
     }
     this->serial->write(chardata);
+    ui->lineEdit_send_input->setText("");
 }
 
 void MainWindow::pollPorts()
@@ -339,4 +348,36 @@ void MainWindow::about()
                        tr("Serial console tool for programmers. "
                           "For use with Arduino, HC-11, ESP8266 etc."
                           "See https://github.com/jarkko-hautakorpi/QIoT-terminal.git"));
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == ui->lineEdit_send_input) {
+        // emit signal on keypress in lineEdit field
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+            emit keypress(keyEvent->key());
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::keyeventHandler(int key)
+{
+    // Browse line input history with up/down keys
+    if (key == Qt::Key_Up && this->historyPointer == 0)
+        return;
+    if (key == Qt::Key_Up && this->historyPointer >= 1)
+    {
+        this->historyPointer--;
+        QString line = this->history.at(this->historyPointer);
+        ui->lineEdit_send_input->setText(line);
+    } else if (key == Qt::Key_Down && historyPointer+1 < this->history.count()) {
+        this->historyPointer++;
+        QString line = this->history.at(this->historyPointer);
+        ui->lineEdit_send_input->setText(line);
+    } else if(key == Qt::Key_Down) {
+        this->historyPointer = this->history.count();
+        ui->lineEdit_send_input->setText("");
+    }
 }

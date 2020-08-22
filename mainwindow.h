@@ -8,6 +8,7 @@
 #include <QtGui/QTextCursor>
 #include <QTimer>
 #include <QTextCodec>
+#include <QEvent>
 
 namespace Ui {
 class MainWindow;
@@ -18,10 +19,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QByteArray consoleTextBuffer;
+    QStringList history;
+    int historyPointer;
     bool consoleTextBufferUpdated;
+    bool eventFilter(QObject* obj, QEvent *event);
     struct SerialSettings {
         QString name;
         qint32 baudRate;
@@ -48,6 +52,9 @@ public slots:
     void setConsoleTextUpdate();
     void callEnumeratePorts();
 
+signals:
+    void keypress(int);
+
 private:
     Ui::MainWindow *ui;
     QSerialPort *serial;
@@ -65,6 +72,7 @@ private slots:
     void about();
     void sendString();
     void pollPorts();
+    void keyeventHandler(int key);
 };
 
 #endif // MAINWINDOW_H
